@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  themes: false;
+  include: footer, kbd;
+  prefix: daisy-;
+  logs: false;
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+  --brand: #0052ff;
+  --brand-contrast: #fff;
+  --bg: #f4f8ff;
+  --surface: rgb(255 255 255 / 0.72);
+  --solid: #fff;
+  --glass-line: rgb(255 255 255 / 0.9);
+  --line: #e2e9f6;
+  --tint: #edf4ff;
+  --ink: #1e1e1e;
+  --ink-2: #4b4b4b;
+  --ink-3: #6b6b6b;
+  --focus-ring: rgb(0 82 255 / 0.35);
+  --aurora-1: rgb(0 82 255 / 0.18);
+  --aurora-2: rgb(91 149 255 / 0.18);
+  --aurora-3: rgb(53 125 240 / 0.16);
+  --destructive: #b91c1c;
+  --radius: 0.5rem;
+
+  --color-base-100: var(--solid);
+  --color-base-200: var(--tint);
+  --color-base-300: var(--line);
+  --color-base-content: var(--ink);
+  --radius-field: var(--radius);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --brand: #5b95ff;
+  --brand-contrast: #060d22;
+  --bg: #060d22;
+  --surface: rgb(16 31 72 / 0.55);
+  --solid: #0e1c42;
+  --glass-line: rgb(120 160 255 / 0.14);
+  --line: #1c2e5e;
+  --tint: rgb(91 149 255 / 0.14);
+  --ink: #eef2fa;
+  --ink-2: #b9c3d9;
+  --ink-3: #8592af;
+  --focus-ring: rgb(91 149 255 / 0.5);
+  --aurora-1: rgb(0 82 255 / 0.35);
+  --aurora-2: rgb(53 125 240 / 0.18);
+  --aurora-3: rgb(5 48 114 / 0.6);
+  --destructive: #f87171;
+}
+
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-contrast: var(--brand-contrast);
+  --color-surface: var(--surface);
+  --color-solid: var(--solid);
+  --color-line: var(--line);
+  --color-tint: var(--tint);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-primary: var(--brand);
+  --color-primary-foreground: var(--brand-contrast);
+  --color-secondary: var(--tint);
+  --color-secondary-foreground: var(--ink);
+  --color-accent: var(--tint);
+  --color-accent-foreground: var(--ink);
+  --color-muted-foreground: var(--ink-3);
+  --color-destructive: var(--destructive);
+  --color-border: var(--line);
+  --color-input: var(--line);
+  --color-ring: var(--focus-ring);
+  --radius-md: calc(var(--radius) - 2px);
+
+  --font-sans: "Noto Sans Thai Looped", system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans Variable", "Noto Sans Thai Looped", sans-serif;
+}
+
+@theme {
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.045);
+  --shadow-glass: 0 1px 2px rgb(11 23 56 / 0.036), 0 12px 32px -8px rgb(0 82 255 / 0.126);
+  --shadow-lift: 0 18px 40px -12px rgb(0 82 255 / 0.27);
+}
+
+@utility glass {
+  background-color: var(--surface);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--shadow-glass);
+}
+
+@utility bg-aurora {
+  background:
+    radial-gradient(60vw 40vw at 0% -10%, var(--aurora-1), transparent 60%),
+    radial-gradient(50vw 40vw at 100% 10%, var(--aurora-2), transparent 60%),
+    radial-gradient(70vw 50vw at 50% 110%, var(--aurora-3), transparent 60%),
+    var(--bg);
+}
+
+@utility bg-brand-hero {
+  background:
+    radial-gradient(circle at 90% 110%, rgb(53 125 240 / 0.45), transparent 45%),
+    linear-gradient(158deg, #0052ff 13%, #0b1738 89%);
+}
+
+/* Let the page crossfade handle the color change without a second transition on glass surfaces. */
+:root:active-view-transition .glass {
+  transition-property: none;
+}
+
+@layer base {
+  ::view-transition {
+    pointer-events: none;
+  }
+
+  ::view-transition-group(root) {
+    animation-duration: 300ms;
+    animation-timing-function: ease-in-out;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
