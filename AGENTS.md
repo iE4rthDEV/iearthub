@@ -1,6 +1,6 @@
 ## Project Overview
 
-iEartHub is a Thai-first web hub for personal tools. The home page lets users search, filter by category, and pin favorites. The browser saves the selected theme and favorites in `localStorage`.
+iEartHub is a Thai-first web hub for personal tools. The home page lets users search, filter by category, and pin favorites. The browser saves favorites in `localStorage`. The site uses a single light theme.
 
 ## Tech Stack
 
@@ -31,8 +31,8 @@ Use the existing dependencies for routine verification. Run an install only if t
 
 ## Architecture Notes
 
-- **Theming.** The theme is the `data-theme` attribute on `<html>`, not a class. An inline script in `app/layout.tsx` sets it before paint (hence `suppressHydrationWarning`), and `components/navbar.tsx` toggles it. Tailwind's `dark:` variant is redefined in `app/globals.css` to match `[data-theme="dark"]`.
-- **Design tokens.** CSS variables defined per theme in `app/globals.css` are exposed both as Tailwind colors (`text-ink-2`, `bg-tint`, ...) and as shadcn's names (`primary`, `border`, `ring`, ...). Custom utilities: `glass`, `bg-aurora`, `bg-brand-hero`.
+- **Theme.** The site uses light mode only. `app/globals.css` sets `color-scheme: light` on `:root`; there is no theme switcher or saved theme setting.
+- **Design tokens.** CSS variables defined on `:root` in `app/globals.css` are exposed both as Tailwind colors (`text-ink-2`, `bg-tint`, ...) and as shadcn's names (`primary`, `border`, `ring`, ...). Custom utilities: `glass`, `bg-aurora`, `bg-brand-hero`.
 - **Pinned section.** Only the first 4 pinned tools in catalog order (the order of `tools` in `lib/tools.ts`, not the order they were pinned) are shown, mapped to `pinnedCardVariants` for the bento layout.
 - **Categories.** The `Category` type is derived from the `categories` array in `lib/tools.ts`, so adding a category means editing that array only.
 
@@ -54,7 +54,7 @@ Use the existing dependencies for routine verification. Run an install only if t
 ## UI and Styling Rules
 
 - Use Tailwind utilities and the existing theme tokens in `app/globals.css`. Reuse local shadcn/ui primitives for inputs and buttons. daisyUI runs with `themes: false` and only the `footer` and `kbd` components, so use `daisy-footer` / `daisy-kbd` for the footer and keyboard shortcut badge.
-- Check UI changes manually in the browser via `npm run dev`: in light and dark mode, on narrow and wide screens, and with keyboard navigation where applicable. The header is sticky at the `xl` breakpoint (1280px) and above.
+- Check UI changes manually in the browser via `npm run dev`: on narrow and wide screens, and with keyboard navigation where applicable. The header is sticky at the `xl` breakpoint (1280px) and above.
 - Keep scrolling lightweight. Avoid applying backdrop blur to repeated cards or using a fixed background attachment on the page.
 - Write Tailwind v4 canonical classes, such as `shrink-0`, `bg-linear-to-r`, and spacing-scale values like `max-w-290` when they produce the same CSS as an arbitrary value. The editor flags other forms with `suggestCanonicalClasses` warnings that agents cannot see, so check every class you edit against this yourself. Keep an arbitrary value when no canonical class produces the same CSS.
 
