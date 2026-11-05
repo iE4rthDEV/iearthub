@@ -7,8 +7,6 @@
   logs: false;
 }
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-
 :root {
   color-scheme: light;
   --brand: #0052ff;
@@ -26,6 +24,8 @@
   --aurora-1: rgb(0 82 255 / 0.18);
   --aurora-2: rgb(91 149 255 / 0.18);
   --aurora-3: rgb(53 125 240 / 0.16);
+  --glass-shadow: 0 1px 2px rgb(11 23 56 / 0.036), 0 12px 32px -8px rgb(0 82 255 / 0.126);
+  --lift-shadow: 0 18px 40px -12px rgb(0 82 255 / 0.27);
   --destructive: #b91c1c;
   --radius: 0.5rem;
 
@@ -36,27 +36,9 @@
   --radius-field: var(--radius);
 }
 
-[data-theme="dark"] {
-  color-scheme: dark;
-  --brand: #5b95ff;
-  --brand-contrast: #060d22;
-  --bg: #060d22;
-  --surface: rgb(16 31 72 / 0.55);
-  --solid: #0e1c42;
-  --glass-line: rgb(120 160 255 / 0.14);
-  --line: #1c2e5e;
-  --tint: rgb(91 149 255 / 0.14);
-  --ink: #eef2fa;
-  --ink-2: #b9c3d9;
-  --ink-3: #8592af;
-  --focus-ring: rgb(91 149 255 / 0.5);
-  --aurora-1: rgb(0 82 255 / 0.35);
-  --aurora-2: rgb(53 125 240 / 0.18);
-  --aurora-3: rgb(5 48 114 / 0.6);
-  --destructive: #f87171;
-}
-
 @theme inline {
+  --shadow-glass: var(--glass-shadow);
+  --shadow-lift: var(--lift-shadow);
   --color-brand: var(--brand);
   --color-brand-contrast: var(--brand-contrast);
   --color-surface: var(--surface);
@@ -88,14 +70,12 @@
 
 @theme {
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.045);
-  --shadow-glass: 0 1px 2px rgb(11 23 56 / 0.036), 0 12px 32px -8px rgb(0 82 255 / 0.126);
-  --shadow-lift: 0 18px 40px -12px rgb(0 82 255 / 0.27);
 }
 
 @utility glass {
+  @apply shadow-glass;
   background-color: var(--surface);
   border: 1px solid var(--glass-line);
-  box-shadow: var(--shadow-glass);
 }
 
 @utility bg-aurora {
@@ -112,21 +92,7 @@
     linear-gradient(158deg, #0052ff 13%, #0b1738 89%);
 }
 
-/* Let the page crossfade handle the color change without a second transition on glass surfaces. */
-:root:active-view-transition .glass {
-  transition-property: none;
-}
-
 @layer base {
-  ::view-transition {
-    pointer-events: none;
-  }
-
-  ::view-transition-group(root) {
-    animation-duration: 300ms;
-    animation-timing-function: ease-in-out;
-  }
-
   :focus-visible {
     outline: 3px solid var(--focus-ring);
     outline-offset: 2px;

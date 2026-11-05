@@ -88,7 +88,7 @@ export function ToolHub() {
         <section className="pt-16 pb-8 text-center" aria-labelledby="hero-title">
           <h1 id="hero-title" className="mt-4 mb-3 text-[clamp(30px,5.5vw,52px)] leading-tight font-bold tracking-tight">
             เครื่องมือของ iEarthDev<br />
-            <span className="bg-[linear-gradient(90deg,#0052FF_13%,#0B1738_89%)] bg-clip-text text-transparent dark:bg-[linear-gradient(90deg,#5B95FF_13%,#DCE6FA_89%)]">
+            <span className="bg-[linear-gradient(90deg,#0052FF_13%,#0B1738_89%)] bg-clip-text text-transparent">
               รวมไว้ในที่เดียว
             </span>
           </h1>
@@ -112,7 +112,7 @@ export function ToolHub() {
               aria-keyshortcuts="/"
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
-              className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-2 text-base text-ink shadow-none placeholder:text-ink-3 focus-visible:ring-0 dark:bg-transparent md:text-base"
+              className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-2 text-base text-ink shadow-none placeholder:text-ink-3 focus-visible:ring-0 md:text-base"
             />
             <kbd className="daisy-kbd h-5.5 min-w-0 rounded-md border border-line bg-solid px-2 font-display text-xs text-ink-3">/</kbd>
           </div>
