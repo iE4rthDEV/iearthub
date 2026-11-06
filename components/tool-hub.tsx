@@ -3,7 +3,6 @@
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { Navbar } from "@/components/navbar";
 import { ToolCard } from "@/components/tool-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,8 @@ import { categories, tools, type Category } from "@/lib/tools";
 const favoritesKey = "hub.favs";
 const defaultFavoriteIds = ["sum", "qr", "json", "bg"];
 const pinnedCardVariants = ["hero", "wide", "default", "default"] as const;
+const maxPinnedTools = pinnedCardVariants.length;
+const catalogToolIds = new Set(tools.map((tool) => tool.id));
 
 export function ToolHub() {
   const [selectedCategory, setSelectedCategory] = useState<Category>("all");
@@ -24,8 +25,9 @@ export function ToolHub() {
       const savedIds: unknown = JSON.parse(localStorage.getItem(favoritesKey) ?? "null");
       if (Array.isArray(savedIds) && savedIds.every((id) => typeof id === "string")) {
         // Read after the first render because localStorage only exists in the browser.
+        // Keep only tools that still exist, then cap at the pin limit (old data may hold more than that).
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setFavoriteIds(savedIds);
+        setFavoriteIds(savedIds.filter((id) => catalogToolIds.has(id)).slice(0, maxPinnedTools));
       }
     } catch {
       // Fall back to the default pins if storage is unavailable or malformed.
@@ -53,8 +55,14 @@ export function ToolHub() {
     return () => document.removeEventListener("keydown", focusSearch);
   }, []);
 
+  // Count only tools that exist in the catalog, so ids of removed tools never use up a pin slot.
+  const pinnedTools = tools.filter((tool) => favoriteIds.includes(tool.id));
+  const isPinLimitReached = pinnedTools.length >= maxPinnedTools;
+
   function toggleFavorite(toolId: string) {
     const isPinned = favoriteIds.includes(toolId);
+    if (!isPinned && isPinLimitReached) return;
+
     const nextFavoriteIds = isPinned
       ? favoriteIds.filter((id) => id !== toolId)
       : [...favoriteIds, toolId];
@@ -74,16 +82,11 @@ export function ToolHub() {
     const searchableText = `${tool.name} ${tool.description}`.toLowerCase();
     return matchesCategory && searchableText.includes(searchQuery);
   });
-  const pinnedTools = tools
-    .filter((tool) => favoriteIds.includes(tool.id))
-    .slice(0, pinnedCardVariants.length);
   const showPinnedTools = selectedCategory === "all" && !searchQuery && pinnedTools.length > 0;
   const toolsHeading = searchQuery ? `ผลการค้นหา (${filteredTools.length})` : "เครื่องมือทั้งหมด";
 
   return (
-    <div id="top" className="mx-auto w-full max-w-290 flex-1 px-4">
-      <Navbar />
-
+    <div id="top" className="mx-auto w-full max-w-303 px-4">
       <main>
         <section className="pt-16 pb-8 text-center" aria-labelledby="hero-title">
           <h1 id="hero-title" className="mt-4 mb-3 text-[clamp(30px,5.5vw,52px)] leading-tight font-bold tracking-tight">
@@ -125,7 +128,7 @@ export function ToolHub() {
                 variant="ghost"
                 aria-pressed={selectedCategory === id}
                 onClick={() => setSelectedCategory(id)}
-                className="glass h-auto cursor-pointer gap-1.5 rounded-2xl px-3.5 py-1.5 font-normal text-ink-2 has-[>svg]:px-3.5 hover:bg-surface hover:text-brand aria-pressed:border-transparent aria-pressed:bg-brand aria-pressed:text-brand-contrast"
+                className="glass h-auto cursor-pointer gap-1.5 rounded-2xl px-3.5 py-1.5 font-normal text-ink-2 has-[>svg]:px-3.5 hover:border-brand/35 hover:bg-brand/10 hover:text-brand aria-pressed:border-transparent aria-pressed:bg-brand aria-pressed:text-brand-contrast aria-pressed:hover:border-transparent aria-pressed:hover:bg-brand aria-pressed:hover:text-brand-contrast"
               >
                 <Icon className="size-4" aria-hidden="true" />
                 {label}
@@ -137,8 +140,10 @@ export function ToolHub() {
         {showPinnedTools && (
           <section aria-labelledby="pinned-title" className="mb-9">
             <div className="mt-2 mb-3 flex flex-wrap items-baseline justify-between gap-x-3">
-              <h2 id="pinned-title" className="text-lg font-bold">ใช้บ่อย</h2>
-              <p className="text-[13px] text-ink-3">กดดาวเพื่อปักหมุดเครื่องมือ</p>
+              <h2 id="pinned-title" className="text-lg font-bold">ปักหมุด</h2>
+              <p className="text-[13px] text-ink-3">
+                ปักหมุดแล้ว {pinnedTools.length}/{maxPinnedTools} · กดดาวเพื่อปักหมุดเครื่องมือ
+              </p>
             </div>
             <div className="grid auto-rows-[minmax(150px,auto)] grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
               {pinnedTools.map((tool, index) => (
@@ -164,6 +169,7 @@ export function ToolHub() {
                 key={tool.id}
                 tool={tool}
                 isPinned={favoriteIds.includes(tool.id)}
+                isPinDisabled={isPinLimitReached && !favoriteIds.includes(tool.id)}
                 onTogglePin={() => toggleFavorite(tool.id)}
               />
             ))}
