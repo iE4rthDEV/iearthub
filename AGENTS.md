@@ -24,17 +24,18 @@ Use the existing dependencies for routine verification. Run an install only if t
 
 ## Structure
 
-- `app/` contains App Router pages, the root layout, metadata, the app icon, and global styles.
-- `components/` contains the header, footer, tool hub, and tool cards.
+- `app/` contains App Router pages, the root layout, metadata, the app icon, and global styles. Tool pages live at `app/tools/<id>/page.tsx`.
+- `components/` contains the navbar, footer, tool hub, tool cards, and each tool's own components, prefixed with the tool id (`json-*.tsx`).
 - `components/ui/` contains the local shadcn/ui primitives.
-- `lib/tools.ts` contains the catalog data and types. `lib/utils.ts` contains the shared class-name helper.
+- `lib/tools.ts` contains the catalog data and types. `lib/utils.ts` contains the shared class-name helper. A tool's pure helpers (no React or DOM) live in `lib/<id>-tools.ts`.
 
 ## Architecture Notes
 
 - **Theme.** The site uses light mode only. `app/globals.css` sets `color-scheme: light` on `:root`; there is no theme switcher or saved theme setting.
 - **Design tokens.** CSS variables defined on `:root` in `app/globals.css` are exposed both as Tailwind colors (`text-ink-2`, `bg-tint`, ...) and as shadcn's names (`primary`, `border`, `ring`, ...). Custom utilities: `glass`, `bg-aurora`, `bg-brand-hero`.
-- **Pinned section.** Only the first 4 pinned tools in catalog order (the order of `tools` in `lib/tools.ts`, not the order they were pinned) are shown, mapped to `pinnedCardVariants` for the bento layout.
+- **Pinned section.** The pin limit equals the number of `pinnedCardVariants` in `components/tool-hub.tsx` (one bento slot per pin), so raising it means adding a variant. Pinned tools are listed in catalog order (the order of `tools` in `lib/tools.ts`, not the order they were pinned) and mapped to the variants for the bento layout. Saved ids of tools that left the catalog are ignored, so they never use a pin slot.
 - **Categories.** The `Category` type is derived from the `categories` array in `lib/tools.ts`, so adding a category means editing that array only.
+- **Tool pages.** A catalog entry in `lib/tools.ts` with `href` renders as an openable card; an entry without it shows "เร็วๆ นี้". A page renders only its own content, inside the same wrapper classes as the home page container in `components/tool-hub.tsx`; the root layout already provides `<Navbar />` and `<Footer />`. A tool page is a Server Component that reads its name, description, and icon from the catalog, then renders the tool's client component; Lucide icons cannot be passed as props into a client component.
 
 ## Agent Behavioral Rules
 
@@ -53,10 +54,13 @@ Use the existing dependencies for routine verification. Run an install only if t
 
 ## UI and Styling Rules
 
-- Use Tailwind utilities and the existing theme tokens in `app/globals.css`. Reuse local shadcn/ui primitives for inputs and buttons. daisyUI runs with `themes: false` and only the `footer` and `kbd` components, so use `daisy-footer` / `daisy-kbd` for the footer and keyboard shortcut badge.
-- Check UI changes manually in the browser via `npm run dev`: on narrow and wide screens, and with keyboard navigation where applicable. The header is sticky at the `xl` breakpoint (1280px) and above.
+- Use Tailwind utilities and the existing theme tokens in `app/globals.css`.
+- **Component library.** Reuse a primitive already in `components/ui/` before adding a new one. Otherwise pick by behavior: shadcn/ui for controls that need JavaScript or keyboard behavior (select, dialog, popover, tabs); daisyUI for CSS-only pieces (footer, kbd, badge, divider). If an element fits neither, ask the user.
+  - **daisyUI** is configured in the `@plugin "daisyui"` block of `app/globals.css` (prefix `daisy-`, no themes). Enable a component by adding its name to that block's `include` list before using its class.
+  - **New shadcn/ui primitive:** `app/globals.css` has no `popover` color tokens and `tw-animate-css` is not installed, so map `bg-popover` / `text-popover-foreground` to `bg-white` / `text-ink` and drop `animate-*` classes from the shadcn template.
+- Check UI changes manually in the browser via `npm run dev`: on narrow and wide screens, and with keyboard navigation where applicable. The navbar is sticky at the `xl` breakpoint (1280px) and above.
 - Keep scrolling lightweight. Avoid applying backdrop blur to repeated cards or using a fixed background attachment on the page.
-- Write Tailwind v4 canonical classes, such as `shrink-0`, `bg-linear-to-r`, and spacing-scale values like `max-w-290` when they produce the same CSS as an arbitrary value. The editor flags other forms with `suggestCanonicalClasses` warnings that agents cannot see, so check every class you edit against this yourself. Keep an arbitrary value when no canonical class produces the same CSS.
+- Write Tailwind v4 canonical classes, such as `shrink-0`, `bg-linear-to-r`, and spacing-scale values like `size-8.5` when they produce the same CSS as an arbitrary value. The editor flags other forms with `suggestCanonicalClasses` warnings that agents cannot see, so check every class you edit against this yourself. Keep an arbitrary value when no canonical class produces the same CSS.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
