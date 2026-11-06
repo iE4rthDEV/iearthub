@@ -15,7 +15,7 @@ type JsonTreeViewProps = {
 
 export function JsonTreeView({ value }: JsonTreeViewProps) {
   return (
-    <ul className="font-mono text-sm leading-7" aria-label="JSON แบบ tree">
+    <ul className="min-w-0 font-mono text-sm leading-7" aria-label="JSON แบบ tree">
       <JsonTreeNode name={null} value={value} depth={0} />
     </ul>
   );
@@ -65,7 +65,7 @@ function JsonTreeNode({ name, value, depth }: JsonTreeNodeProps) {
         onClick={() => setIsExpanded(!isExpanded)}
         aria-expanded={isExpanded}
         disabled={entries.length === 0}
-        className="flex w-full items-center rounded-md text-left hover:bg-tint focus-visible:outline-2 focus-visible:outline-brand disabled:cursor-default disabled:hover:bg-transparent"
+        className="flex min-h-11 w-full min-w-0 items-center rounded-md text-left hover:bg-tint focus-visible:outline-2 focus-visible:outline-brand disabled:cursor-default disabled:hover:bg-transparent"
       >
         <ChevronRight
           className={cn(
@@ -75,7 +75,7 @@ function JsonTreeNode({ name, value, depth }: JsonTreeNodeProps) {
           )}
           aria-hidden="true"
         />
-        <span className="ml-1">
+        <span className="ml-1 min-w-0 wrap-anywhere">
           {label}
           <span className="text-ink-3">
             {openBracket}
@@ -89,7 +89,8 @@ function JsonTreeNode({ name, value, depth }: JsonTreeNodeProps) {
 
       {showChildren && (
         <>
-          <ul className="ml-2 border-l border-line pl-3">
+          {/* Deep trees scroll inside the panel instead of shrinking labels to zero width. */}
+          <ul className="ml-1 min-w-40 border-l border-line pl-2 sm:ml-2 sm:pl-3">
             {entries.map(([childName, childValue]) => (
               <JsonTreeNode key={childName} name={childName} value={childValue} depth={depth + 1} />
             ))}

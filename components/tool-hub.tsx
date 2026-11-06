@@ -7,6 +7,7 @@ import { ToolCard } from "@/components/tool-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { categories, tools, type Category } from "@/lib/tools";
+import { cn } from "@/lib/utils";
 
 const favoritesKey = "hub.favs";
 const defaultFavoriteIds = ["sum", "qr", "json", "bg"];
@@ -58,6 +59,7 @@ export function ToolHub() {
   // Count only tools that exist in the catalog, so ids of removed tools never use up a pin slot.
   const pinnedTools = tools.filter((tool) => favoriteIds.includes(tool.id));
   const isPinLimitReached = pinnedTools.length >= maxPinnedTools;
+  const hasFullPinnedLayout = pinnedTools.length === maxPinnedTools;
 
   function toggleFavorite(toolId: string) {
     const isPinned = favoriteIds.includes(toolId);
@@ -86,10 +88,10 @@ export function ToolHub() {
   const toolsHeading = searchQuery ? `ผลการค้นหา (${filteredTools.length})` : "เครื่องมือทั้งหมด";
 
   return (
-    <div id="top" className="mx-auto w-full max-w-303 px-4">
-      <main>
-        <section className="pt-16 pb-8 text-center" aria-labelledby="hero-title">
-          <h1 id="hero-title" className="mt-4 mb-3 text-[clamp(30px,5.5vw,52px)] leading-tight font-bold tracking-tight">
+    <div id="top" className="page-container">
+      <main className="pb-6 sm:pb-10 lg:pb-14">
+        <section className="pt-8 pb-6 text-center sm:pt-12 sm:pb-8 lg:pt-16" aria-labelledby="hero-title">
+          <h1 id="hero-title" className="mt-2 mb-3 text-[clamp(1.5rem,5vw,3.25rem)] leading-snug font-bold tracking-tight wrap-anywhere sm:mt-4">
             เครื่องมือของ iEarthDev<br />
             <span className="bg-[linear-gradient(90deg,#0052FF_13%,#0B1738_89%)] bg-clip-text text-transparent">
               รวมไว้ในที่เดียว
@@ -98,13 +100,13 @@ export function ToolHub() {
           <p className="mx-auto mb-2 font-display text-sm font-semibold tracking-wide text-brand capitalize">
             your tool hearth
           </p>
-          <p className="mx-auto mb-7 max-w-130 text-ink-2">
+          <p className="mx-auto mb-6 max-w-130 text-sm text-ink-2 sm:mb-7 sm:text-base">
             กล่องเครื่องมือประจำวัน เปิดได้ทุกที่ที่มีเรา
           </p>
 
           <div
             role="search"
-            className="glass mx-auto flex max-w-140 items-center gap-2.5 rounded-xl py-1.5 px-4 text-ink-3 transition focus-within:border-brand focus-within:ring-2 focus-within:ring-ring"
+            className="glass mx-auto flex w-full max-w-160 items-center gap-2.5 rounded-xl px-3 py-1.5 text-ink-3 transition focus-within:border-brand focus-within:ring-2 focus-within:ring-ring sm:px-4"
           >
             <Search className="size-5 shrink-0" aria-hidden="true" />
             <Input
@@ -117,10 +119,10 @@ export function ToolHub() {
               onChange={(event) => setSearchText(event.target.value)}
               className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-2 text-base text-ink shadow-none placeholder:text-ink-3 focus-visible:ring-0 md:text-base"
             />
-            <kbd className="daisy-kbd h-5.5 min-w-0 rounded-md border border-line bg-solid px-2 font-display text-xs text-ink-3">/</kbd>
+            <kbd className="daisy-kbd hidden h-5.5 min-w-0 rounded-md border border-line bg-solid px-2 font-display text-xs text-ink-3 sm:inline-flex">/</kbd>
           </div>
 
-          <div role="group" aria-label="หมวดหมู่" className="mt-7 mb-6 flex flex-wrap justify-center gap-2">
+          <div role="group" aria-label="หมวดหมู่" className="mx-auto mt-5 flex max-w-240 flex-wrap justify-center gap-2 sm:mt-7">
             {categories.map(({ id, label, icon: Icon }) => (
               <Button
                 key={id}
@@ -128,7 +130,7 @@ export function ToolHub() {
                 variant="ghost"
                 aria-pressed={selectedCategory === id}
                 onClick={() => setSelectedCategory(id)}
-                className="glass h-auto cursor-pointer gap-1.5 rounded-2xl px-3.5 py-1.5 font-normal text-ink-2 has-[>svg]:px-3.5 hover:border-brand/35 hover:bg-brand/10 hover:text-brand aria-pressed:border-transparent aria-pressed:bg-brand aria-pressed:text-brand-contrast aria-pressed:hover:border-transparent aria-pressed:hover:bg-brand aria-pressed:hover:text-brand-contrast"
+                className="glass h-auto min-h-11 max-w-full cursor-pointer gap-1.5 rounded-2xl px-3 py-2 font-normal whitespace-normal text-ink-2 has-[>svg]:px-3 hover:border-brand/35 hover:bg-brand/10 hover:text-brand aria-pressed:border-transparent aria-pressed:bg-brand aria-pressed:text-brand-contrast aria-pressed:hover:border-transparent aria-pressed:hover:bg-brand aria-pressed:hover:text-brand-contrast sm:px-3.5 sm:has-[>svg]:px-3.5"
               >
                 <Icon className="size-4" aria-hidden="true" />
                 {label}
@@ -138,19 +140,26 @@ export function ToolHub() {
         </section>
 
         {showPinnedTools && (
-          <section aria-labelledby="pinned-title" className="mb-9">
-            <div className="mt-2 mb-3 flex flex-wrap items-baseline justify-between gap-x-3">
+          <section aria-labelledby="pinned-title" className="mb-8 sm:mb-10 lg:mb-12">
+            <div className="mt-2 mb-3 flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-3">
               <h2 id="pinned-title" className="text-lg font-bold">ปักหมุด</h2>
-              <p className="text-[13px] text-ink-3">
+              <p className="text-xs text-ink-3 sm:text-sm">
                 ปักหมุดแล้ว {pinnedTools.length}/{maxPinnedTools} · กดดาวเพื่อปักหมุดเครื่องมือ
               </p>
             </div>
-            <div className="grid auto-rows-[minmax(150px,auto)] grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className={cn(
+              "grid grid-cols-1 gap-3 sm:gap-4 lg:gap-5 2xl:gap-6",
+              pinnedTools.length > 1 && "sm:grid-cols-2",
+              pinnedTools.length > 1 && "lg:grid-cols-3",
+              pinnedTools.length > 2 && "lg:auto-rows-[minmax(11rem,auto)]",
+              hasFullPinnedLayout && "lg:grid-cols-4",
+            )}>
               {pinnedTools.map((tool, index) => (
                 <ToolCard
                   key={tool.id}
                   tool={tool}
                   variant={pinnedCardVariants[index]}
+                  pinnedToolCount={pinnedTools.length}
                   isPinned
                   onTogglePin={() => toggleFavorite(tool.id)}
                 />
@@ -163,7 +172,7 @@ export function ToolHub() {
           <h2 id="tools-title" className="mt-2 mb-3 scroll-mt-24 text-lg font-bold" aria-live="polite">
             {toolsHeading}
           </h2>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,240px),1fr))] gap-3.5">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-5 xl:grid-cols-4 2xl:gap-6">
             {filteredTools.map((tool) => (
               <ToolCard
                 key={tool.id}
@@ -174,7 +183,7 @@ export function ToolHub() {
               />
             ))}
             {filteredTools.length === 0 && (
-              <p className="glass col-span-full rounded-2xl p-10 text-center wrap-anywhere text-ink-3">
+              <p className="glass col-span-full rounded-2xl px-4 py-8 text-center wrap-anywhere text-ink-3 sm:p-10">
                 ไม่พบเครื่องมือที่ตรงกับ “{trimmedSearch}”
               </p>
             )}

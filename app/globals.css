@@ -72,6 +72,11 @@
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.045);
 }
 
+/* Keep the navbar, pages, and footer aligned at every viewport width. */
+@utility page-container {
+  @apply mx-auto w-full min-w-0 max-w-360 px-4 sm:px-6 lg:px-8 2xl:px-10;
+}
+
 @utility glass {
   @apply shadow-glass;
   background-color: var(--surface);

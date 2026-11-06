@@ -22,22 +22,22 @@ export default function JsonFormatterPage() {
   const Icon = jsonTool.icon;
 
   return (
-    <div className="mx-auto w-full max-w-303 px-4">
-      <main className="pt-8 pb-16">
+    <div className="page-container">
+      <main className="pt-4 pb-6 sm:pt-6 sm:pb-10 lg:pt-8 lg:pb-14">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-ink-2 hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-sm text-sm font-medium text-ink-2 hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           <ArrowLeft className="size-4" aria-hidden="true" /> กลับหน้าหลัก
         </Link>
 
-        <header className="mt-4 mb-6 flex items-center gap-4">
-          <div className="grid size-13 shrink-0 place-items-center rounded-xl bg-tint text-brand">
+        <header className="mt-3 mb-5 flex items-start gap-3 sm:mt-4 sm:mb-6 sm:items-center sm:gap-4">
+          <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-tint text-brand sm:size-13">
             <Icon className="size-6" aria-hidden="true" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{jsonTool.name}</h1>
-            <p className="text-ink-2">{jsonTool.description}</p>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold tracking-tight wrap-anywhere sm:text-3xl">{jsonTool.name}</h1>
+            <p className="mt-1 text-sm text-ink-2 sm:text-base">{jsonTool.description}</p>
           </div>
         </header>
 

@@ -12,6 +12,8 @@ type ToolCardProps = {
   isPinDisabled?: boolean;
   onTogglePin: () => void;
   variant?: "hero" | "wide" | "default";
+  /** The pinned grid's count controls card spans; catalog cards leave this at zero. */
+  pinnedToolCount?: number;
 };
 
 export function ToolCard({
@@ -20,6 +22,7 @@ export function ToolCard({
   isPinDisabled = false,
   onTogglePin,
   variant = "default",
+  pinnedToolCount = 0,
 }: ToolCardProps) {
   const isHeroCard = variant === "hero";
   const isReady = Boolean(tool.href);
@@ -32,11 +35,13 @@ export function ToolCard({
   return (
     <article
       className={cn(
-        "group relative flex flex-col gap-2 overflow-hidden rounded-2xl transition duration-300 hover:-translate-y-0.75 hover:border-brand hover:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+        "group relative flex min-w-0 flex-col gap-2 overflow-hidden rounded-2xl transition duration-300 hover:-translate-y-0.75 hover:border-brand hover:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0",
         isHeroCard
-          ? "bg-brand-hero border border-transparent p-6 text-white sm:col-span-2 sm:row-span-2"
-          : "glass p-4.5",
-        variant === "wide" && "sm:col-span-2",
+          ? "bg-brand-hero border border-transparent p-5 text-white sm:p-6"
+          : "glass p-4 sm:p-5",
+        isHeroCard && pinnedToolCount > 1 && "lg:col-span-2",
+        isHeroCard && pinnedToolCount > 2 && "lg:row-span-2",
+        variant === "wide" && pinnedToolCount > 3 && "lg:col-span-2",
       )}
     >
       <div
@@ -47,14 +52,14 @@ export function ToolCard({
       >
         <Icon className="size-5" aria-hidden="true" />
       </div>
-      <h3 className={cn("mt-1 font-semibold", isHeroCard ? "text-[22px]" : "text-base")}>
+      <h3 className={cn("mt-1 font-semibold wrap-anywhere", isHeroCard ? "text-xl sm:text-2xl" : "text-base")}>
         {tool.name}
       </h3>
-      <p className={cn("text-sm", isHeroCard ? "text-white/85" : "text-ink-2")}>
+      <p className={cn("text-sm wrap-anywhere", isHeroCard ? "text-white/85" : "text-ink-2")}>
         {tool.description}
       </p>
       {isHeroCard && tool.usage && (
-        <dl className="mt-2 flex gap-5 text-xs text-white/75">
+        <dl className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-xs text-white/75">
           <div className="flex flex-col">
             <dt>ครั้งที่ใช้</dt>
             <dd className="order-first font-display text-[22px] font-bold text-white">{tool.usage.count}</dd>
@@ -65,7 +70,7 @@ export function ToolCard({
           </div>
         </dl>
       )}
-      <div className="mt-auto flex items-center justify-between gap-2 pt-1 text-sm">
+      <div className="mt-auto flex min-h-11 flex-wrap items-center justify-between gap-2 pt-1 text-sm">
         {!isReady && (
           <span
             className={cn(
@@ -114,7 +119,7 @@ export function ToolCard({
         title={isPinDisabled ? "ปักหมุดครบแล้ว เอาอันอื่นออกก่อน" : undefined}
         onClick={isPinDisabled ? undefined : onTogglePin}
         className={cn(
-          "absolute top-3 right-3 z-10 size-8.5 cursor-pointer rounded-lg aria-pressed:text-amber-400 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:bg-transparent [&_svg]:size-5 aria-pressed:[&_svg]:fill-current",
+          "absolute top-2 right-2 z-10 size-11 cursor-pointer rounded-lg aria-pressed:text-amber-400 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:bg-transparent [&_svg]:size-5 aria-pressed:[&_svg]:fill-current sm:top-3 sm:right-3",
           isHeroCard
             ? "text-white/70 hover:bg-white/10 hover:text-white"
             : "text-ink-3 hover:bg-tint hover:text-ink-3",

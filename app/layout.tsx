@@ -20,11 +20,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="th">
-      <body className="bg-aurora min-h-screen font-sans leading-relaxed text-ink antialiased">
-        <div className="flex min-h-screen flex-col">
+      <body className="bg-aurora min-h-dvh font-sans leading-relaxed text-ink antialiased">
+        <div className="flex min-h-dvh min-w-0 flex-col">
           <Navbar />
-          {/* At least one viewport tall, so every page scrolls and the scrollbar always covers the reserved gutter. */}
-          <div className="min-h-dvh">{children}</div>
+          <div className="min-w-0 flex-1">{children}</div>
           <Footer />
         </div>
       </body>

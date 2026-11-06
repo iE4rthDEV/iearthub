@@ -21,24 +21,15 @@ import {
 import { JsonEditor, type JsonEditorHandle } from "@/components/json-editor";
 import { JsonTreeView } from "@/components/json-tree-view";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   countKeys,
   formatByteSize,
   getByteSize,
   repairJson,
-  toIndentValue,
   validateJson,
-  type IndentOption,
   type JsonValidation,
 } from "@/lib/json-tools";
 import { cn } from "@/lib/utils";
-
-const indentOptions: { value: IndentOption; label: string }[] = [
-  { value: "2", label: "ย่อหน้า 2 ช่อง" },
-  { value: "4", label: "ย่อหน้า 4 ช่อง" },
-  { value: "tab", label: "ย่อหน้าด้วย Tab" },
-];
 
 const SAMPLE_JSON =
   '{"name":"iEartHub","version":1,"tags":["tools","thai"],"owner":{"name":"iEarth","active":true},"features":[{"id":"json","title":"JSON Formatter"},{"id":"qr","title":"สร้าง QR Code"}],"note":null}';
@@ -50,9 +41,11 @@ type Notice = { text: string; tone: "success" | "error" };
 const kbdClassName =
   "daisy-kbd h-5.5 min-w-0 rounded-md border border-line bg-white px-2 font-display text-xs text-ink-3";
 
+const actionButtonClassName =
+  "h-8 min-w-0 rounded-full px-2 text-xs has-[>svg]:px-2 sm:h-10 sm:px-4 sm:text-sm sm:has-[>svg]:px-3 [&_svg]:hidden sm:[&_svg]:block";
+
 export function JsonFormatter() {
   const [content, setContent] = useState("");
-  const [indent, setIndent] = useState<IndentOption>("2");
   const [viewMode, setViewMode] = useState<ViewMode>("text");
   const [history, setHistory] = useState({ canUndo: false, canRedo: false });
   const [isCopied, setIsCopied] = useState(false);
@@ -102,7 +95,7 @@ export function JsonFormatter() {
 
   function handleFormat() {
     const result = parseCurrentContent();
-    if (result.ok) editorRef.current?.replaceContent(JSON.stringify(result.value, null, toIndentValue(indent)));
+    if (result.ok) editorRef.current?.replaceContent(JSON.stringify(result.value, null, 2));
   }
 
   function handleMinify() {
@@ -149,49 +142,65 @@ export function JsonFormatter() {
   return (
     <section
       aria-labelledby="json-editor-label"
-      className="overflow-hidden rounded-2xl border border-line bg-white shadow-glass"
+      className="min-w-0 overflow-hidden rounded-2xl border border-line bg-white shadow-glass"
     >
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line px-4 py-3">
-        <h2 id="json-editor-label" className="font-display text-lg font-semibold">
-          JSON
-        </h2>
-        <StatusBadge validation={validation} onGoToError={handleGoToError} />
+      <div className="flex items-start justify-between gap-2 border-b border-line px-3 py-3 sm:px-4 md:items-center md:gap-3">
+        <div className="flex min-w-0 flex-col items-start gap-1 md:flex-row md:items-center md:gap-3">
+          <h2 id="json-editor-label" className="font-display text-2xl leading-tight font-semibold">
+            JSON
+          </h2>
+          <div className="flex min-w-0 items-center">
+            <StatusBadge validation={validation} onGoToError={handleGoToError} />
+          </div>
+        </div>
 
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          <div role="group" aria-label="มุมมอง" className="flex items-center gap-1 rounded-full bg-tint p-1">
-            <ViewModeButton isActive={visibleView === "text"} onClick={() => setViewMode("text")}>
-              <Code aria-hidden="true" /> Text
+        <div className="flex shrink-0 flex-col items-end gap-1 md:flex-row md:items-center md:gap-2">
+          <div role="group" aria-label="มุมมอง" className="flex items-center gap-0.5 rounded-full bg-tint p-0.5 sm:gap-1 sm:p-1">
+            <ViewModeButton isActive={visibleView === "text"} onClick={() => setViewMode("text")} title="Text">
+              <Code className="size-3.5 sm:size-4" aria-hidden="true" />
+              <span>Text</span>
             </ViewModeButton>
             <ViewModeButton
               isActive={visibleView === "tree"}
               onClick={() => setViewMode("tree")}
               disabled={!isValid}
-              title={isValid ? undefined : "ใช้ได้เมื่อ JSON ถูกต้อง"}
+              title={isValid ? "Tree" : "ใช้ได้เมื่อ JSON ถูกต้อง"}
             >
-              <ListTree aria-hidden="true" /> Tree
+              <ListTree className="size-3.5 sm:size-4" aria-hidden="true" />
+              <span>Tree</span>
             </ViewModeButton>
           </div>
 
-          <div className="flex items-center border-line sm:border-l sm:pl-2">
-            <IconButton label="ย้อนกลับ (Ctrl+Z)" onClick={() => editorRef.current?.undo()} disabled={!history.canUndo}>
-              <Undo2 aria-hidden="true" />
-            </IconButton>
-            <IconButton label="ทำซ้ำ (Ctrl+Y)" onClick={() => editorRef.current?.redo()} disabled={!history.canRedo}>
-              <Redo2 aria-hidden="true" />
-            </IconButton>
-          </div>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center border-line md:border-l md:pl-2">
+              <IconButton label="ย้อนกลับ (Ctrl+Z)" onClick={() => editorRef.current?.undo()} disabled={!history.canUndo}>
+                <Undo2 className="size-3.5 sm:size-4" aria-hidden="true" />
+              </IconButton>
+              <IconButton label="ทำซ้ำ (Ctrl+Y)" onClick={() => editorRef.current?.redo()} disabled={!history.canRedo}>
+                <Redo2 className="size-3.5 sm:size-4" aria-hidden="true" />
+              </IconButton>
+            </div>
 
-          <Button type="button" variant="soft" onClick={handleCopy} disabled={isEmpty} className="rounded-full">
-            {isCopied ? <ClipboardCheck aria-hidden="true" /> : <Copy aria-hidden="true" />}
-            {isCopied ? "คัดลอกแล้ว" : "คัดลอก"}
-          </Button>
+            <Button
+              type="button"
+              variant="soft"
+              size="icon"
+              onClick={handleCopy}
+              disabled={isEmpty}
+              title={isCopied ? "คัดลอกแล้ว" : "คัดลอก"}
+              className="size-8 rounded-full sm:h-10 sm:w-auto sm:px-3"
+            >
+              {isCopied ? <ClipboardCheck className="size-3.5 sm:size-4" aria-hidden="true" /> : <Copy className="size-3.5 sm:size-4" aria-hidden="true" />}
+              <span className="sr-only sm:not-sr-only">{isCopied ? "คัดลอกแล้ว" : "คัดลอก"}</span>
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Body: the editor stays mounted in tree mode so its undo history is kept. */}
       {/* pb-4 keeps the scrollbars above the resize handle in the bottom-right corner. */}
-      <div className="relative h-112 min-h-60 resize-y overflow-hidden pb-4">
-        <div className={cn("h-full", visibleView !== "text" && "hidden")}>
+      <div className="relative h-[clamp(12rem,55dvh,40rem)] min-h-48 min-w-0 resize-y overflow-hidden pb-4 sm:min-h-60">
+        <div className={cn("h-full min-w-0", visibleView !== "text" && "hidden")}>
           <JsonEditor
             ref={editorRef}
             ariaLabelledBy="json-editor-label"
@@ -203,12 +212,12 @@ export function JsonFormatter() {
 
         {visibleView === "text" && content === "" && (
           // Shown over the empty editor; only the button inside catches clicks.
-          <div className="pointer-events-none absolute top-3 left-9 text-sm text-ink-3">
+          <div className="pointer-events-none absolute top-3 right-3 left-9 font-mono text-base leading-[1.6] text-ink-3">
             วาง JSON ที่นี่ หรือ{" "}
             <button
               type="button"
               onClick={handleLoadSample}
-              className="pointer-events-auto rounded-sm font-medium text-brand underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-brand"
+              className="pointer-events-auto relative rounded-sm align-baseline font-medium text-brand underline-offset-4 after:absolute after:inset-x-0 after:-inset-y-1 hover:underline focus-visible:outline-2 focus-visible:outline-brand"
             >
               ใส่ตัวอย่าง
             </button>
@@ -216,54 +225,39 @@ export function JsonFormatter() {
         )}
 
         {visibleView === "tree" && validation.status === "valid" && (
-          <div className="h-full overflow-auto p-4">
+          <div className="h-full min-w-0 overflow-auto overscroll-contain p-3 sm:p-4">
             <JsonTreeView value={validation.value} />
           </div>
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-line bg-solid px-4 py-3">
+      <div className="grid grid-cols-4 gap-1.5 border-t border-line bg-solid px-3 py-3 sm:flex sm:flex-wrap sm:items-center sm:gap-2 sm:px-4">
         <Button
           type="button"
           onClick={handleFormat}
           disabled={!isValid}
           aria-keyshortcuts="Control+Enter Meta+Enter"
           title="Format (Ctrl+Enter)"
-          className="h-10 rounded-full px-5"
+          className={actionButtonClassName}
         >
           <WandSparkles aria-hidden="true" /> Format
         </Button>
-        <Button type="button" variant="soft" onClick={handleMinify} disabled={!isValid} className="h-10 rounded-full">
+        <Button type="button" variant="soft" onClick={handleMinify} disabled={!isValid} className={actionButtonClassName}>
           <Minimize2 aria-hidden="true" /> Minify
         </Button>
-        <Button type="button" variant="soft" onClick={handleRepair} disabled={!isInvalid} className="h-10 rounded-full">
+        <Button type="button" variant="soft" onClick={handleRepair} disabled={!isInvalid} className={actionButtonClassName}>
           <Wrench aria-hidden="true" /> Repair
         </Button>
-        <Button type="button" variant="soft" onClick={handleClear} disabled={isEmpty} className="h-10 rounded-full">
+        <Button type="button" variant="soft" onClick={handleClear} disabled={isEmpty} className={actionButtonClassName}>
           <Eraser aria-hidden="true" /> ล้าง
         </Button>
-        <Select value={indent} onValueChange={(value) => setIndent(value as IndentOption)}>
-          {/* The trigger width fits the longest option, and the menu below uses the same width so both line up. */}
-          <SelectTrigger aria-label="ระยะย่อหน้า" className="w-40 rounded-full bg-white data-[size=default]:h-10">
-            <SelectValue />
-          </SelectTrigger>
-          {/* rounded-2xl matches the card; items use rounded-xl (16px minus the 4px padding) so the corners stay parallel. */}
-          <SelectContent className="w-(--radix-select-trigger-width) rounded-2xl">
-            {indentOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value} className="rounded-xl">
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <div className="ml-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-3">
+        <div className="col-span-4 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 pt-1 text-xs wrap-anywhere text-ink-3 sm:w-full md:ml-auto md:w-auto md:flex-1 md:justify-end md:pt-0">
           {notice ? (
             <span role="status" className={notice.tone === "error" ? "text-destructive" : "text-emerald-700"}>
               {notice.text}
             </span>
           ) : (
-            <span>
+            <span className="hidden lg:inline">
               {stats
                 ? [
                     stats.keyCount !== null && `${stats.keyCount.toLocaleString()} keys`,
@@ -275,10 +269,10 @@ export function JsonFormatter() {
                 : "ยังไม่มีข้อมูล"}
             </span>
           )}
-          <span className="hidden items-center gap-1 border-l border-line pl-3 lg:inline-flex" aria-hidden="true">
+          <span className="hidden items-center gap-1 border-l border-line pl-3 xl:inline-flex" aria-hidden="true">
             <kbd className={kbdClassName}>Ctrl</kbd>+<kbd className={kbdClassName}>Enter</kbd> Format
           </span>
-          <span className="hidden items-center gap-1 border-l border-line pl-3 sm:inline-flex">
+          <span className="inline-flex items-center gap-1 lg:border-l lg:border-line lg:pl-3">
             <ShieldCheck className="size-4" aria-hidden="true" /> ประมวลผลในเครื่อง
           </span>
         </div>
@@ -293,10 +287,10 @@ type StatusBadgeProps = {
 };
 
 function StatusBadge({ validation, onGoToError }: StatusBadgeProps) {
-  const badgeClassName = "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium";
+  const badgeClassName = "inline-flex min-w-0 max-w-full items-center gap-1 rounded-2xl px-2 py-1 text-left text-xs font-medium whitespace-normal wrap-anywhere sm:gap-1.5 sm:px-3 [&_svg]:shrink-0";
 
   return (
-    <span role="status">
+    <span role="status" className="inline-flex min-w-0 max-w-full align-middle">
       {validation.status === "empty" && (
         <span className={cn(badgeClassName, "bg-tint text-ink-3")}>
           <CircleDashed className="size-3.5" aria-hidden="true" /> ยังไม่มีข้อมูล
@@ -316,11 +310,14 @@ function StatusBadge({ validation, onGoToError }: StatusBadgeProps) {
           title={`${validation.rawMessage}\n(กดเพื่อไปที่จุดผิด)`}
           className={cn(
             badgeClassName,
-            "cursor-pointer bg-destructive/10 text-destructive hover:bg-destructive/15 focus-visible:outline-2 focus-visible:outline-destructive",
+            "min-h-8 cursor-pointer bg-destructive/10 text-destructive hover:bg-destructive/15 focus-visible:outline-2 focus-visible:outline-destructive sm:min-h-11",
           )}
         >
           <CircleAlert className="size-3.5" aria-hidden="true" />
-          JSON ไม่ถูกต้อง · บรรทัด {validation.position.line} คอลัมน์ {validation.position.column}
+          <span>
+            JSON ไม่ถูกต้อง
+            <span className="sr-only sm:not-sr-only"> · บรรทัด {validation.position.line} คอลัมน์ {validation.position.column}</span>
+          </span>
         </button>
       )}
 
@@ -352,7 +349,7 @@ function ViewModeButton({ isActive, onClick, disabled, title, children }: ViewMo
       disabled={disabled}
       title={title}
       className={cn(
-        "h-8 rounded-full px-4 hover:bg-white/70",
+        "h-8 gap-1 rounded-full px-2 text-xs has-[>svg]:px-2 hover:bg-white/70 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm sm:has-[>svg]:px-3",
         isActive && "bg-white text-brand shadow-xs hover:bg-white",
       )}
     >
@@ -378,7 +375,7 @@ function IconButton({ label, onClick, disabled, children }: IconButtonProps) {
       disabled={disabled}
       aria-label={label}
       title={label}
-      className="text-ink-2"
+      className="size-8 text-ink-2 sm:size-10"
     >
       {children}
     </Button>
