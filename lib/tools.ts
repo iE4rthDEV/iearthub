@@ -30,48 +30,21 @@ export type Tool = {
   description: string;
   category: Exclude<Category, "all">;
   icon: LucideIcon;
+  /** Page path of a tool that is ready to use. Tools without it show as "coming soon". */
+  href?: string;
   isNew?: boolean;
   usage?: { count: string; rating: string };
 };
 
 export const tools: Tool[] = [
   {
-    id: "sum",
-    name: "สรุปข้อความ",
-    description: "วางบทความยาว แล้วได้ใจความสำคัญภายในไม่กี่วินาที",
-    category: "text",
-    icon: FileText,
-    isNew: true,
-    usage: { count: "1.2k", rating: "4.9" },
-  },
-  {
-    id: "lang",
-    name: "แปลงภาษา",
-    description: "ไทย ⇄ อังกฤษ และแก้คีย์บอร์ดพิมพ์ผิดภาษา",
-    category: "text",
-    icon: Languages,
-  },
-  {
-    id: "img",
-    name: "ย่อขนาดรูป",
-    description: "บีบอัดรูปก่อนอัปโหลด",
-    category: "img",
-    icon: Image,
-  },
-  {
-    id: "bg",
-    name: "ลบพื้นหลัง",
-    description: "ตัดพื้นหลังรูปอัตโนมัติ",
-    category: "img",
-    icon: Scissors,
-    isNew: true,
-  },
-  {
     id: "json",
     name: "JSON Formatter",
     description: "จัดรูปแบบและตรวจ JSON",
     category: "dev",
     icon: Braces,
+    isNew: true,
+    href: "/tools/json",
   },
   {
     id: "pw",
@@ -86,13 +59,6 @@ export const tools: Tool[] = [
     description: "ลิงก์, Wi-Fi, PromptPay",
     category: "daily",
     icon: QrCode,
-  },
-  {
-    id: "days",
-    name: "นับวันทำงาน",
-    description: "คำนวณวันทำงานไม่รวมวันหยุดไทย",
-    category: "daily",
-    icon: CalendarDays,
   },
   {
     id: "fx",

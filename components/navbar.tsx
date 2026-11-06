@@ -3,7 +3,8 @@ import Link from "next/link";
 
 export function Navbar() {
   return (
-    <header className="mt-3 xl:sticky xl:top-3 xl:z-20">
+    // The width classes sit on the sticky header itself: wrapping it in a container div would end the sticky effect.
+    <header className="mx-auto mt-3 w-full max-w-303 px-4 xl:sticky xl:top-3 xl:z-20">
       <nav
         className="glass flex h-14 items-center gap-2 rounded-xl bg-solid/95 pr-2 pl-3.5"
         aria-label="หลัก"

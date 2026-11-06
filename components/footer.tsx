@@ -4,7 +4,7 @@ import Image from "next/image";
 export function Footer() {
   return (
     <footer className="daisy-footer mt-12 border-t border-line bg-solid text-ink">
-      <div className="mx-auto w-full max-w-290 justify-items-center gap-x-10 gap-y-8 px-4 py-12 text-center md:grid-cols-3 md:py-14">
+      <div className="mx-auto w-full max-w-303 justify-items-center gap-x-10 gap-y-8 px-4 py-12 text-center md:grid-cols-3 md:py-14">
         <div className="grid justify-items-center  gap-4 md:justify-self-start md:justify-items-start">
           <div className="flex items-center gap-2.5 font-display text-2xl font-extrabold tracking-tight">
             <Image src="/icon.svg" width={40} height={40} alt="" unoptimized />
