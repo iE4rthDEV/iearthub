@@ -39,9 +39,12 @@ const jsonHighlightStyle = HighlightStyle.define([
 ]);
 
 const editorTheme = EditorView.theme({
-  "&": { height: "100%", fontSize: "14px", backgroundColor: "transparent" },
+  "&": { height: "100%", minWidth: "0", fontSize: "16px", backgroundColor: "transparent" },
+  "@media (min-width: 40rem) and (pointer: fine)": { "&": { fontSize: "14px" } },
   "&.cm-focused": { outline: "none" },
   ".cm-scroller": {
+    overflow: "auto",
+    overscrollBehavior: "contain",
     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Noto Sans Thai Looped", monospace',
     lineHeight: "1.6",
   },
@@ -53,8 +56,24 @@ const editorTheme = EditorView.theme({
   },
   ".cm-panels": { backgroundColor: "var(--solid)", color: "var(--ink)", borderColor: "var(--line)" },
   ".cm-panels-bottom": { borderTop: "1px solid var(--line)" },
-  ".cm-panel.cm-search": { padding: "8px 12px", fontFamily: "inherit" },
-  ".cm-textfield": { borderRadius: "6px", borderColor: "var(--line)", padding: "2px 6px" },
+  ".cm-panel.cm-search": {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: "6px",
+    padding: "8px 12px",
+    paddingRight: "36px",
+    fontFamily: "inherit",
+  },
+  ".cm-textfield": {
+    maxWidth: "100%",
+    minWidth: "0",
+    boxSizing: "border-box",
+    borderRadius: "6px",
+    borderColor: "var(--line)",
+    padding: "2px 6px",
+    fontSize: "inherit",
+  },
   ".cm-button": { borderRadius: "6px", backgroundImage: "none", backgroundColor: "white", borderColor: "var(--line)" },
 });
 
@@ -184,5 +203,5 @@ export function JsonEditor({ ref, onChange, onHistoryChange, onFormatShortcut, a
     },
   }));
 
-  return <div ref={containerRef} className="h-full" />;
+  return <div ref={containerRef} className="h-full min-w-0" />;
 }
