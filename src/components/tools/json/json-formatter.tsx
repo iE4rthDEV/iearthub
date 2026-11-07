@@ -285,7 +285,12 @@ export function JsonFormatter() {
         >
           <Eraser aria-hidden="true" /> <span className="hidden sm:inline">ล้าง</span>
         </Button>
-        <div className="col-span-4 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 pt-1 text-xs wrap-anywhere text-ink-3 sm:w-full md:ml-auto md:w-auto md:flex-1 md:justify-end md:pt-0">
+        <div
+          className={cn(
+            "col-span-4 min-w-0 flex-wrap items-center gap-x-3 gap-y-2 pt-1 text-xs wrap-anywhere text-ink-3 sm:w-full md:ml-auto md:flex md:w-auto md:flex-1 md:justify-end md:pt-0",
+            notice ? "flex" : "hidden",
+          )}
+        >
           {notice ? (
             <span role="status" className={notice.tone === "error" ? "text-destructive" : "text-emerald-700"}>
               {notice.text}
@@ -306,7 +311,7 @@ export function JsonFormatter() {
           <span className="hidden items-center gap-1 border-l border-line pl-3 xl:inline-flex" aria-hidden="true">
             <kbd className={kbdClassName}>Ctrl</kbd>+<kbd className={kbdClassName}>Enter</kbd> Format
           </span>
-          <span className="inline-flex items-center gap-1 lg:border-l lg:border-line lg:pl-3">
+          <span className="hidden items-center gap-1 md:inline-flex lg:border-l lg:border-line lg:pl-3">
             <ShieldCheck className="size-4" aria-hidden="true" /> ประมวลผลในเครื่อง
           </span>
         </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 
 import { JsonFormatter } from "@/components/tools/json/json-formatter";
 import { tools } from "@/data/tools";
@@ -37,7 +37,10 @@ export default function JsonFormatterPage() {
           </div>
           <div className="min-w-0">
             <h1 className="text-xl font-bold tracking-tight wrap-anywhere sm:text-3xl">{jsonTool.name}</h1>
-            <p className="mt-1 text-sm text-ink-2 sm:text-base">{jsonTool.description}</p>
+            <p className="mt-1 hidden text-sm text-ink-2 sm:text-base md:block">{jsonTool.description}</p>
+            <p className="mt-2 flex items-center gap-1 text-xs text-ink-3 md:hidden">
+              <ShieldCheck className="size-4 shrink-0" aria-hidden="true" /> ประมวลผลในเครื่อง
+            </p>
           </div>
         </header>
 
