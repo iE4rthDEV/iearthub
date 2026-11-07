@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { ToolCard } from "@/components/sections/tool-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { categories, type Category } from "@/data/categories";
 import { tools } from "@/data/tools";
 import { cn } from "@/lib/utils";
@@ -16,10 +17,29 @@ const pinnedCardVariants = ["hero", "wide", "default", "default"] as const;
 const maxPinnedTools = pinnedCardVariants.length;
 const catalogToolIds = new Set(tools.map((tool) => tool.id));
 
+// Placeholder for a pinned card while the saved pins are read; spans match the full pinned layout.
+function PinnedCardSkeleton({ variant }: { variant: (typeof pinnedCardVariants)[number] }) {
+  return (
+    <div
+      className={cn(
+        "glass flex min-w-0 flex-col gap-2 rounded-2xl p-4 sm:p-5",
+        variant === "hero" && "lg:col-span-2 lg:row-span-2",
+        variant === "wide" && "lg:col-span-2",
+      )}
+    >
+      <Skeleton className="size-11 rounded-xl" />
+      <Skeleton className="mt-1 h-5 w-2/3" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="mt-auto h-5 w-24 self-end" />
+    </div>
+  );
+}
+
 export function ToolHub() {
   const [selectedCategory, setSelectedCategory] = useState<Category>("all");
   const [searchText, setSearchText] = useState("");
   const [favoriteIds, setFavoriteIds] = useState(defaultFavoriteIds);
+  const [isFavoritesLoaded, setIsFavoritesLoaded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -34,6 +54,8 @@ export function ToolHub() {
     } catch {
       // Fall back to the default pins if storage is unavailable or malformed.
     }
+    // Whatever the result, the pins are final now, so the skeleton can go away.
+    setIsFavoritesLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -140,7 +162,20 @@ export function ToolHub() {
           </div>
         </section>
 
-        {showPinnedTools && (
+        {!isFavoritesLoaded && selectedCategory === "all" && !searchQuery && (
+          <section aria-labelledby="pinned-title" aria-busy="true" className="mb-8 sm:mb-10 lg:mb-12">
+            <div className="mt-2 mb-3">
+              <h2 id="pinned-title" className="text-lg font-bold">ปักหมุด</h2>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:auto-rows-[minmax(11rem,auto)] lg:grid-cols-4 lg:gap-5 2xl:gap-6">
+              {pinnedCardVariants.map((variant, index) => (
+                <PinnedCardSkeleton key={index} variant={variant} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {showPinnedTools && isFavoritesLoaded && (
           <section aria-labelledby="pinned-title" className="mb-8 sm:mb-10 lg:mb-12">
             <div className="mt-2 mb-3 flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-3">
               <h2 id="pinned-title" className="text-lg font-bold">ปักหมุด</h2>

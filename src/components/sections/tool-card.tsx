@@ -87,7 +87,7 @@ export function ToolCard({
           // The pin button sits above it with z-10, so it stays clickable.
           <Link
             href={tool.href}
-            aria-label={`เปิด ${tool.name}`}
+            aria-label={`เปิดใช้งาน ${tool.name}`}
             className={cn(
               openLabelClassName,
               "ml-auto rounded-sm after:absolute after:inset-0 after:rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2",
@@ -104,7 +104,7 @@ export function ToolCard({
                 <button
                   type="button"
                   disabled
-                  aria-label={`เปิด ${tool.name}`}
+                  aria-label={`เปิดใช้งาน ${tool.name}`}
                   className={cn(openLabelClassName, "cursor-not-allowed")}
                 >
                   เปิดใช้งาน <ArrowRight className="size-4" aria-hidden="true" />
