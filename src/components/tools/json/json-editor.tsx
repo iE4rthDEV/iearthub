@@ -1,25 +1,38 @@
 "use client";
 
 import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
-import { basicSetup } from "codemirror";
-import { isolateHistory, redo, redoDepth, undo, undoDepth } from "@codemirror/commands";
+import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from "@codemirror/autocomplete";
+import { defaultKeymap, history, historyKeymap, isolateHistory, redo, redoDepth, undo, undoDepth } from "@codemirror/commands";
 import { json } from "@codemirror/lang-json";
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
-import { linter, type Diagnostic } from "@codemirror/lint";
+import {
+  HighlightStyle,
+  bracketMatching,
+  defaultHighlightStyle,
+  foldGutter,
+  foldKeymap,
+  indentOnInput,
+  syntaxHighlighting,
+} from "@codemirror/language";
+import { lintKeymap, linter, type Diagnostic } from "@codemirror/lint";
+import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import { EditorState, Prec } from "@codemirror/state";
-import { EditorView, keymap } from "@codemirror/view";
+import {
+  EditorView,
+  crosshairCursor,
+  drawSelection,
+  dropCursor,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  highlightSpecialChars,
+  keymap,
+  lineNumbers,
+  placeholder,
+  rectangularSelection,
+} from "@codemirror/view";
 import { tags } from "@lezer/highlight";
 
 import { validateJson } from "@/lib/json-tools";
-
-export type JsonEditorHandle = {
-  /** Replaces the whole text as one undoable step. */
-  replaceContent: (text: string) => void;
-  undo: () => void;
-  redo: () => void;
-  goTo: (offset: number) => void;
-  focus: () => void;
-};
+import type { JsonEditorHandle } from "@/types/json";
 
 type JsonEditorProps = {
   ref?: Ref<JsonEditorHandle>;
@@ -38,6 +51,60 @@ const jsonHighlightStyle = HighlightStyle.define([
   { tag: [tags.brace, tags.squareBracket, tags.separator, tags.punctuation], color: "var(--ink-3)" },
 ]);
 
+function createFoldMarker(isOpen: boolean) {
+  const svgNamespace = "http://www.w3.org/2000/svg";
+  const icon = document.createElementNS(svgNamespace, "svg");
+  icon.setAttribute("viewBox", "0 0 24 24");
+  icon.setAttribute("fill", "none");
+  icon.setAttribute("stroke", "currentColor");
+  icon.setAttribute("stroke-width", "2");
+  icon.setAttribute("stroke-linecap", "round");
+  icon.setAttribute("stroke-linejoin", "round");
+  icon.setAttribute("aria-hidden", "true");
+  icon.classList.add("cm-fold-icon");
+
+  const path = document.createElementNS(svgNamespace, "path");
+  path.setAttribute("d", isOpen ? "m6 9 6 6 6-6" : "m9 18 6-6-6-6");
+  icon.appendChild(path);
+
+  const marker = document.createElement("span");
+  marker.title = isOpen ? "พับ" : "ขยาย";
+  marker.appendChild(icon);
+  return marker;
+}
+
+// Same extensions as codemirror's basicSetup, except foldGutter uses the Lucide chevron marker above.
+const editorSetup = [
+  lineNumbers(),
+  highlightActiveLineGutter(),
+  highlightSpecialChars(),
+  history(),
+  foldGutter({ markerDOM: createFoldMarker }),
+  drawSelection(),
+  dropCursor(),
+  EditorState.allowMultipleSelections.of(true),
+  indentOnInput(),
+  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+  bracketMatching(),
+  closeBrackets(),
+  autocompletion(),
+  rectangularSelection(),
+  crosshairCursor(),
+  // Drawn by CodeMirror at the text start, so it lines up with the caret whatever the gutter width is.
+  placeholder("วาง JSON ที่นี่ หรือกดปุ่มตัวอย่างด้านบน"),
+  highlightActiveLine(),
+  highlightSelectionMatches(),
+  keymap.of([
+    ...closeBracketsKeymap,
+    ...defaultKeymap,
+    ...searchKeymap,
+    ...historyKeymap,
+    ...foldKeymap,
+    ...completionKeymap,
+    ...lintKeymap,
+  ]),
+];
+
 const editorTheme = EditorView.theme({
   "&": { height: "100%", minWidth: "0", fontSize: "16px", backgroundColor: "transparent" },
   "@media (min-width: 40rem) and (pointer: fine)": { "&": { fontSize: "14px" } },
@@ -50,7 +117,14 @@ const editorTheme = EditorView.theme({
   },
   ".cm-content": { padding: "12px 0", caretColor: "var(--brand)" },
   ".cm-gutters": { backgroundColor: "transparent", border: "none", color: "var(--ink-3)" },
+  ".cm-placeholder": { color: "var(--ink-3)" },
   ".cm-activeLine, .cm-activeLineGutter": { backgroundColor: "rgb(0 82 255 / 0.04)" },
+  ".cm-lineNumbers .cm-gutterElement": { fontSize: "0.8em", lineHeight: "2", padding: "0 4px 0 12px", opacity: "0.75" },
+  ".cm-lineNumbers .cm-activeLineGutter": { color: "var(--ink-2)", opacity: "1" },
+  ".cm-foldGutter .cm-gutterElement": { padding: "0 6px", cursor: "pointer", color: "var(--ink-3)" },
+  ".cm-foldGutter .cm-gutterElement:hover": { color: "var(--brand)" },
+  ".cm-foldGutter span": { display: "flex", alignItems: "center", height: "100%" },
+  ".cm-fold-icon": { width: "1.1em", height: "1.1em" },
   "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection": {
     backgroundColor: "rgb(0 82 255 / 0.18) !important",
   },
@@ -129,7 +203,7 @@ export function JsonEditor({ ref, onChange, onHistoryChange, onFormatShortcut, a
       state: EditorState.create({
         doc: "",
         extensions: [
-          basicSetup,
+          editorSetup,
           json(),
           jsonErrorLinter,
           syntaxHighlighting(jsonHighlightStyle),

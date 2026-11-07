@@ -109,6 +109,5 @@ function JsonPrimitive({ value }: { value: unknown }) {
   if (typeof value === "number") {
     return <span className="text-amber-700">{value}</span>;
   }
-  // true, false, or null
   return <span className="text-violet-700">{String(value)}</span>;
 }

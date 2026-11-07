@@ -2,7 +2,8 @@ import { ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import type { Tool } from "@/lib/tools";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import type { Tool } from "@/types/tool";
 import { cn } from "@/lib/utils";
 
 type ToolCardProps = {
@@ -96,37 +97,48 @@ export function ToolCard({
             เปิดใช้งาน <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
         ) : (
-          <button
-            type="button"
-            disabled
-            aria-label={`เปิด ${tool.name}`}
-            title="เครื่องมือนี้ยังไม่เปิดให้ใช้งาน"
-            className={cn(openLabelClassName, "ml-auto cursor-not-allowed")}
-          >
-            เปิดใช้งาน <ArrowRight className="size-4" aria-hidden="true" />
-          </button>
+          // A disabled button ignores the pointer, so the span receives the hover for the tooltip.
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="ml-auto">
+                <button
+                  type="button"
+                  disabled
+                  aria-label={`เปิด ${tool.name}`}
+                  className={cn(openLabelClassName, "cursor-not-allowed")}
+                >
+                  เปิดใช้งาน <ArrowRight className="size-4" aria-hidden="true" />
+                </button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>เครื่องมือนี้ยังไม่เปิดให้ใช้งาน</TooltipContent>
+          </Tooltip>
         )}
       </div>
       {/* Placed last in the DOM so Tab reaches the open link before the pin button; absolute keeps it top-right. */}
-      {/* aria-disabled instead of disabled: Button's disabled style blocks the mouse, so the title tooltip would never show. */}
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        aria-pressed={isPinned}
-        aria-disabled={isPinDisabled}
-        aria-label={`ปักหมุด ${tool.name}`}
-        title={isPinDisabled ? "ปักหมุดครบแล้ว เอาอันอื่นออกก่อน" : undefined}
-        onClick={isPinDisabled ? undefined : onTogglePin}
-        className={cn(
-          "absolute top-2 right-2 z-10 size-11 cursor-pointer rounded-lg aria-pressed:text-amber-400 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:bg-transparent [&_svg]:size-5 aria-pressed:[&_svg]:fill-current sm:top-3 sm:right-3",
-          isHeroCard
-            ? "text-white/70 hover:bg-white/10 hover:text-white"
-            : "text-ink-3 hover:bg-tint hover:text-ink-3",
-        )}
-      >
-        <Star aria-hidden="true" />
-      </Button>
+      {/* aria-disabled instead of disabled: Button's disabled style blocks the mouse, so the tooltip would never show. */}
+      <Tooltip open={isPinDisabled ? undefined : false}>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-pressed={isPinned}
+            aria-disabled={isPinDisabled}
+            aria-label={`ปักหมุด ${tool.name}`}
+            onClick={isPinDisabled ? undefined : onTogglePin}
+            className={cn(
+              "absolute top-2 right-2 z-10 size-11 cursor-pointer rounded-lg aria-pressed:text-amber-400 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:bg-transparent [&_svg]:size-5 aria-pressed:[&_svg]:fill-current sm:top-3 sm:right-3",
+              isHeroCard
+                ? "text-white/70 hover:bg-white/10 hover:text-white"
+                : "text-ink-3 hover:bg-tint hover:text-ink-3",
+            )}
+          >
+            <Star aria-hidden="true" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>ปักหมุดครบแล้ว เอาอันอื่นออกก่อน</TooltipContent>
+      </Tooltip>
     </article>
   );
 }

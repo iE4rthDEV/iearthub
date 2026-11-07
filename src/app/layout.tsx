@@ -6,8 +6,8 @@ import "@fontsource/noto-sans-thai-looped/700.css";
 import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 
-import { Footer } from "@/components/footer";
-import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/layout/navbar";
 
 export const metadata: Metadata = {
   title: {
