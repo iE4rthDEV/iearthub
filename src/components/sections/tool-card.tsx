@@ -128,7 +128,7 @@ export function ToolCard({
                   type="button"
                   disabled
                   aria-label={`เปิดใช้งาน ${tool.name}`}
-                  className={cn(openLabelClassName, "cursor-not-allowed")}
+                  className={cn(openLabelClassName, "cursor-not-allowed disabled:opacity-50")}
                 >
                   เปิดใช้งาน <ArrowRight className="size-4" aria-hidden="true" />
                 </button>
