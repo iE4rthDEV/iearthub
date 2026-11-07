@@ -1,7 +1,9 @@
 import { ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 
 import { Button } from "@/components/ui/button";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Tool } from "@/types/tool";
 import { cn } from "@/lib/utils";
@@ -39,12 +41,33 @@ export function ToolCard({
         "group relative flex min-w-0 flex-col gap-2 overflow-hidden rounded-2xl transition duration-300 hover:-translate-y-0.75 hover:border-brand hover:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0",
         isHeroCard
           ? "bg-brand-hero border border-transparent p-5 text-white sm:p-6"
-          : "glass p-4 sm:p-5",
+          : "glass isolate p-4 sm:p-5",
         isHeroCard && pinnedToolCount > 1 && "lg:col-span-2",
         isHeroCard && pinnedToolCount > 2 && "lg:row-span-2",
         variant === "wide" && pinnedToolCount > 3 && "lg:col-span-2",
       )}
     >
+      {/* Decoration only: it follows the pointer from the window, so it can sit behind the content (-z-10 inside the isolated card). */}
+      {/* The card keeps its own surface and border, so the spotlight's surface, shadow and static border are turned off. */}
+      {!isHeroCard && (
+        <SpotlightCard
+          aria-hidden="true"
+          theme="light"
+          spotlightColor="var(--brand)"
+          intensity={0.5}
+          borderGlow={0.8}
+          spotlightSize={200}
+          flare={false}
+          className="pointer-events-none absolute inset-0 -z-10 rounded-[inherit]"
+          style={
+            {
+              "--spotlight-card-surface": "transparent",
+              "--spotlight-card-shadow": "none",
+              "--spotlight-card-border": "transparent",
+            } as CSSProperties
+          }
+        />
+      )}
       <div
         className={cn(
           "grid place-items-center rounded-xl",
