@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# lore session notes (personal working state)
+/.handoff/
+
+# local personal files
+*.local.*
