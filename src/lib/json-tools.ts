@@ -91,13 +91,78 @@ export function countKeys(value: unknown): number {
   return 0;
 }
 
-// Fixes common mistakes such as trailing commas, single quotes, or missing quotes around keys.
-export function repairJson(text: string): string | null {
-  try {
-    return jsonrepair(text);
-  } catch {
-    return null;
+// Puts a comma between top-level values that touch each other, such as `{"a":1}{"b":2}` or `{"a":1} {"b":2}`.
+// jsonrepair only joins values that are separated by a comma or a newline, so this prepares the text for it.
+function separateAdjacentValues(text: string): string {
+  let result = "";
+  let depth = 0;
+  let isInString = false;
+  let isEscaped = false;
+  let hasClosedTopLevelValue = false;
+
+  for (const character of text) {
+    if (isInString) {
+      result += character;
+      if (isEscaped) isEscaped = false;
+      else if (character === "\\") isEscaped = true;
+      else if (character === '"') isInString = false;
+      continue;
+    }
+
+    const isWhitespace = character.trim() === "";
+    const startsValue = character === "{" || character === "[";
+
+    if (hasClosedTopLevelValue && !isWhitespace) {
+      if (startsValue) result += ",";
+      hasClosedTopLevelValue = false;
+    }
+
+    result += character;
+
+    if (character === '"') isInString = true;
+    else if (startsValue) depth += 1;
+    else if (character === "}" || character === "]") {
+      depth = Math.max(0, depth - 1);
+      if (depth === 0) hasClosedTopLevelValue = true;
+    }
   }
+
+  return result;
+}
+
+// Cuts away prose or code around the JSON, e.g. `Here is the data: {"a":1} thanks` or `JSON.stringify({a:1})`:
+// everything from the first opening brace/bracket to the last closing one.
+function extractJsonBlock(text: string): string | null {
+  const openerIndexes = [text.indexOf("{"), text.indexOf("[")].filter((index) => index !== -1);
+  if (openerIndexes.length === 0) return null;
+
+  const start = Math.min(...openerIndexes);
+  const end = Math.max(text.lastIndexOf("}"), text.lastIndexOf("]"));
+  if (end <= start) return null;
+
+  return text.slice(start, end + 1);
+}
+
+// Fixes common mistakes such as trailing commas, single quotes, missing quotes around keys, comments,
+// truncated JSON, several JSON values pasted one after another (the result is then an array of them),
+// or JSON wrapped in other text. Returns null only when none of the attempts below produces JSON.
+export function repairJson(text: string): string | null {
+  const extractedText = extractJsonBlock(text);
+  // Ordered from the least to the most invasive change, so the first success keeps as much of the input as possible.
+  const attempts = [
+    text,
+    separateAdjacentValues(text),
+    ...(extractedText === null ? [] : [extractedText, separateAdjacentValues(extractedText)]),
+  ];
+
+  for (const attempt of attempts) {
+    try {
+      return jsonrepair(attempt);
+    } catch {
+    }
+  }
+
+  return null;
 }
 
 export function formatByteSize(byteCount: number) {

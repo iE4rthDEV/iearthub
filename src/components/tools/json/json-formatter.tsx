@@ -1,14 +1,12 @@
 "use client";
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import {
-  CircleAlert,
-  CircleCheck,
-  CircleDashed,
   ClipboardCheck,
   Code,
   Copy,
   Eraser,
+  FileJson,
   ListTree,
   Minimize2,
   Redo2,
@@ -18,21 +16,26 @@ import {
   Wrench,
 } from "lucide-react";
 
-import { JsonEditor, type JsonEditorHandle } from "@/components/json-editor";
-import { JsonTreeView } from "@/components/json-tree-view";
+import { JsonEditor } from "@/components/tools/json/json-editor";
+import { JsonStatusBadge } from "@/components/tools/json/json-status-badge";
+import { IconButton, ViewModeButton } from "@/components/tools/json/json-toolbar-buttons";
+import { JsonTreeView } from "@/components/tools/json/json-tree-view";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   countKeys,
   formatByteSize,
   getByteSize,
   repairJson,
   validateJson,
-  type JsonValidation,
 } from "@/lib/json-tools";
 import { cn } from "@/lib/utils";
+import type { JsonEditorHandle } from "@/types/json";
 
 const SAMPLE_JSON =
   '{"name":"iEartHub","version":1,"tags":["tools","thai"],"owner":{"name":"iEarth","active":true},"features":[{"id":"json","title":"JSON Formatter"},{"id":"qr","title":"สร้าง QR Code"}],"note":null}';
+
+const STATUS_SETTLE_DELAY_MS = 400;
 
 type ViewMode = "text" | "tree";
 
@@ -42,7 +45,9 @@ const kbdClassName =
   "daisy-kbd h-5.5 min-w-0 rounded-md border border-line bg-white px-2 font-display text-xs text-ink-3";
 
 const actionButtonClassName =
-  "h-8 min-w-0 rounded-full px-2 text-xs has-[>svg]:px-2 sm:h-10 sm:px-4 sm:text-sm sm:has-[>svg]:px-3 [&_svg]:hidden sm:[&_svg]:block";
+  "h-8 min-w-0 rounded-full px-2 text-xs has-[>svg]:px-2 sm:h-10 sm:px-4 sm:text-sm sm:has-[>svg]:px-5 [&_svg]:hidden sm:[&_svg]:block";
+const clearButtonClassName =
+  "bg-destructive/10 text-destructive hover:bg-destructive/15 h-8 min-w-0 rounded-full px-2 text-xs has-[>svg]:px-2 sm:h-10 sm:px-4 sm:text-sm sm:has-[>svg]:px-5";
 
 export function JsonFormatter() {
   const [content, setContent] = useState("");
@@ -54,6 +59,14 @@ export function JsonFormatter() {
 
   // Validate a step behind the typing, so pasting a large JSON does not make the editor lag.
   const deferredContent = useDeferredValue(content);
+  // The badge shows "กำลังตรวจสอบ…" until the text has stayed unchanged for a moment. Only the badge waits;
+  // the buttons keep using the validation result right away, so they never flicker while typing.
+  const [settledContent, setSettledContent] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setSettledContent(content), STATUS_SETTLE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [content]);
+  const isChecking = content !== "" && (content !== settledContent || content !== deferredContent);
   const validation = useMemo(() => validateJson(deferredContent), [deferredContent]);
   const stats = useMemo(() => {
     if (deferredContent === "") return null;
@@ -144,19 +157,18 @@ export function JsonFormatter() {
       aria-labelledby="json-editor-label"
       className="min-w-0 overflow-hidden rounded-2xl border border-line bg-white shadow-glass"
     >
-      <div className="flex items-start justify-between gap-2 border-b border-line px-3 py-3 sm:px-4 md:items-center md:gap-3">
-        <div className="flex min-w-0 flex-col items-start gap-1 md:flex-row md:items-center md:gap-3">
-          <h2 id="json-editor-label" className="font-display text-2xl leading-tight font-semibold">
+      {/* Wrappers use display: contents so all four items share one layout. Mobile: 2x2 grid with the badge and view toggle swapped; md+: one row (title, badge, then toggle and actions on the right). */}
+      <div className="grid grid-cols-[1fr_auto] items-center gap-2 border-b border-line p-3 sm:p-4 md:flex md:gap-3">
+        <div className="contents">
+          <h2 id="json-editor-label" className="order-1 font-display text-2xl leading-tight font-semibold md:order-1">
             JSON
           </h2>
-          <div className="flex min-w-0 items-center">
-            <StatusBadge validation={validation} onGoToError={handleGoToError} />
-          </div>
-        </div>
-
-        <div className="flex shrink-0 flex-col items-end gap-1 md:flex-row md:items-center md:gap-2">
-          <div role="group" aria-label="มุมมอง" className="flex items-center gap-0.5 rounded-full bg-tint p-0.5 sm:gap-1 sm:p-1">
-            <ViewModeButton isActive={visibleView === "text"} onClick={() => setViewMode("text")} title="Text">
+          <div
+            role="group"
+            aria-label="มุมมอง"
+            className="order-4 flex items-center gap-0.5 justify-self-start rounded-full bg-tint p-0.5 sm:gap-1 sm:p-1 md:order-5"
+          >
+            <ViewModeButton isActive={visibleView === "text"} onClick={() => setViewMode("text")}>
               <Code className="size-3.5 sm:size-4" aria-hidden="true" />
               <span>Text</span>
             </ViewModeButton>
@@ -164,15 +176,32 @@ export function JsonFormatter() {
               isActive={visibleView === "tree"}
               onClick={() => setViewMode("tree")}
               disabled={!isValid}
-              title={isValid ? "Tree" : "ใช้ได้เมื่อ JSON ถูกต้อง"}
+              disabledReason="ใช้ได้เมื่อ JSON ถูกต้อง"
             >
               <ListTree className="size-3.5 sm:size-4" aria-hidden="true" />
               <span>Tree</span>
             </ViewModeButton>
           </div>
+        </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="flex items-center border-line md:border-l md:pl-2">
+        <div className="contents">
+          <div className="order-2 flex min-w-0 items-center justify-self-end translate-y-px md:order-2">
+            <JsonStatusBadge validation={validation} onGoToError={handleGoToError} isChecking={isChecking} />
+          </div>
+
+          <div className="order-3 flex items-center gap-1.5 sm:justify-self-end sm:gap-2 md:order-3 md:ml-auto">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleLoadSample}
+              aria-label="ใส่ตัวอย่าง"
+              className="size-8 gap-1.5 rounded-full px-0 text-ink-2 sm:h-10 sm:w-auto sm:px-3 sm:text-sm"
+            >
+              <FileJson className="size-3.5 sm:size-4" aria-hidden="true" />
+              <span className="hidden sm:inline">ตัวอย่าง</span>
+            </Button>
+
+            <div className="flex items-center">
               <IconButton label="ย้อนกลับ (Ctrl+Z)" onClick={() => editorRef.current?.undo()} disabled={!history.canUndo}>
                 <Undo2 className="size-3.5 sm:size-4" aria-hidden="true" />
               </IconButton>
@@ -181,19 +210,27 @@ export function JsonFormatter() {
               </IconButton>
             </div>
 
-            <Button
-              type="button"
-              variant="soft"
-              size="icon"
-              onClick={handleCopy}
-              disabled={isEmpty}
-              title={isCopied ? "คัดลอกแล้ว" : "คัดลอก"}
-              className="size-8 rounded-full sm:h-10 sm:w-auto sm:px-3"
-            >
-              {isCopied ? <ClipboardCheck className="size-3.5 sm:size-4" aria-hidden="true" /> : <Copy className="size-3.5 sm:size-4" aria-hidden="true" />}
-              <span className="sr-only sm:not-sr-only">{isCopied ? "คัดลอกแล้ว" : "คัดลอก"}</span>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleCopy}
+                  disabled={isEmpty}
+                  aria-label={isCopied ? "คัดลอกแล้ว" : "คัดลอก"}
+                  className={`size-8 rounded-full text-ink-2 transition-all duration-200 active:scale-90 sm:size-10 ${
+                    isCopied ? "scale-105 bg-emerald-100 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-700" : ""
+                  }`}
+                >
+                  {isCopied ? <ClipboardCheck className="size-3.5 sm:size-4" aria-hidden="true" /> : <Copy className="size-3.5 sm:size-4" aria-hidden="true" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{isCopied ? "คัดลอกแล้ว" : "คัดลอก"}</TooltipContent>
+            </Tooltip>
           </div>
+
+          <div aria-hidden="true" className="hidden h-6 w-px bg-line md:order-4 md:block" />
         </div>
       </div>
 
@@ -210,20 +247,6 @@ export function JsonFormatter() {
           />
         </div>
 
-        {visibleView === "text" && content === "" && (
-          // Shown over the empty editor; only the button inside catches clicks.
-          <div className="pointer-events-none absolute top-3 right-3 left-9 font-mono text-base leading-[1.6] text-ink-3">
-            วาง JSON ที่นี่ หรือ{" "}
-            <button
-              type="button"
-              onClick={handleLoadSample}
-              className="pointer-events-auto relative rounded-sm align-baseline font-medium text-brand underline-offset-4 after:absolute after:inset-x-0 after:-inset-y-1 hover:underline focus-visible:outline-2 focus-visible:outline-brand"
-            >
-              ใส่ตัวอย่าง
-            </button>
-          </div>
-        )}
-
         {visibleView === "tree" && validation.status === "valid" && (
           <div className="h-full min-w-0 overflow-auto overscroll-contain p-3 sm:p-4">
             <JsonTreeView value={validation.value} />
@@ -231,25 +254,36 @@ export function JsonFormatter() {
         )}
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5 border-t border-line bg-solid px-3 py-3 sm:flex sm:flex-wrap sm:items-center sm:gap-2 sm:px-4">
-        <Button
-          type="button"
-          onClick={handleFormat}
-          disabled={!isValid}
-          aria-keyshortcuts="Control+Enter Meta+Enter"
-          title="Format (Ctrl+Enter)"
-          className={actionButtonClassName}
-        >
-          <WandSparkles aria-hidden="true" /> Format
-        </Button>
+      <div className="grid grid-cols-[1fr_1fr_1fr_1fr] gap-1.5 border-t border-line bg-solid p-5 sm:flex sm:flex-wrap sm:items-center sm:gap-2 sm:px-4">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              onClick={handleFormat}
+              disabled={!isValid}
+              aria-keyshortcuts="Control+Enter Meta+Enter"
+              className={actionButtonClassName}
+            >
+              <WandSparkles aria-hidden="true" /> Format
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Format (Ctrl+Enter)</TooltipContent>
+        </Tooltip>
         <Button type="button" variant="soft" onClick={handleMinify} disabled={!isValid} className={actionButtonClassName}>
           <Minimize2 aria-hidden="true" /> Minify
         </Button>
         <Button type="button" variant="soft" onClick={handleRepair} disabled={!isInvalid} className={actionButtonClassName}>
           <Wrench aria-hidden="true" /> Repair
         </Button>
-        <Button type="button" variant="soft" onClick={handleClear} disabled={isEmpty} className={actionButtonClassName}>
-          <Eraser aria-hidden="true" /> ล้าง
+        <Button
+          type="button"
+          variant="soft"
+          onClick={handleClear}
+          disabled={isEmpty}
+          aria-label="ล้าง"
+          className={clearButtonClassName}
+        >
+          <Eraser aria-hidden="true" /> <span className="hidden sm:inline">ล้าง</span>
         </Button>
         <div className="col-span-4 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 pt-1 text-xs wrap-anywhere text-ink-3 sm:w-full md:ml-auto md:w-auto md:flex-1 md:justify-end md:pt-0">
           {notice ? (
@@ -278,106 +312,5 @@ export function JsonFormatter() {
         </div>
       </div>
     </section>
-  );
-}
-
-type StatusBadgeProps = {
-  validation: JsonValidation;
-  onGoToError: () => void;
-};
-
-function StatusBadge({ validation, onGoToError }: StatusBadgeProps) {
-  const badgeClassName = "inline-flex min-w-0 max-w-full items-center gap-1 rounded-2xl px-2 py-1 text-left text-xs font-medium whitespace-normal wrap-anywhere sm:gap-1.5 sm:px-3 [&_svg]:shrink-0";
-
-  return (
-    <span role="status" className="inline-flex min-w-0 max-w-full align-middle">
-      {validation.status === "empty" && (
-        <span className={cn(badgeClassName, "bg-tint text-ink-3")}>
-          <CircleDashed className="size-3.5" aria-hidden="true" /> ยังไม่มีข้อมูล
-        </span>
-      )}
-
-      {validation.status === "valid" && (
-        <span className={cn(badgeClassName, "bg-emerald-100 text-emerald-800")}>
-          <CircleCheck className="size-3.5" aria-hidden="true" /> JSON ถูกต้อง
-        </span>
-      )}
-
-      {validation.status === "invalid" && validation.position && (
-        <button
-          type="button"
-          onClick={onGoToError}
-          title={`${validation.rawMessage}\n(กดเพื่อไปที่จุดผิด)`}
-          className={cn(
-            badgeClassName,
-            "min-h-8 cursor-pointer bg-destructive/10 text-destructive hover:bg-destructive/15 focus-visible:outline-2 focus-visible:outline-destructive sm:min-h-11",
-          )}
-        >
-          <CircleAlert className="size-3.5" aria-hidden="true" />
-          <span>
-            JSON ไม่ถูกต้อง
-            <span className="sr-only sm:not-sr-only"> · บรรทัด {validation.position.line} คอลัมน์ {validation.position.column}</span>
-          </span>
-        </button>
-      )}
-
-      {validation.status === "invalid" && !validation.position && (
-        <span title={validation.rawMessage} className={cn(badgeClassName, "bg-destructive/10 text-destructive")}>
-          <CircleAlert className="size-3.5" aria-hidden="true" /> JSON ไม่ถูกต้อง
-        </span>
-      )}
-    </span>
-  );
-}
-
-type ViewModeButtonProps = {
-  isActive: boolean;
-  onClick: () => void;
-  disabled?: boolean;
-  title?: string;
-  children: ReactNode;
-};
-
-function ViewModeButton({ isActive, onClick, disabled, title, children }: ViewModeButtonProps) {
-  return (
-    <Button
-      type="button"
-      size="default"
-      variant="ghost"
-      aria-pressed={isActive}
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      className={cn(
-        "h-8 gap-1 rounded-full px-2 text-xs has-[>svg]:px-2 hover:bg-white/70 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm sm:has-[>svg]:px-3",
-        isActive && "bg-white text-brand shadow-xs hover:bg-white",
-      )}
-    >
-      {children}
-    </Button>
-  );
-}
-
-type IconButtonProps = {
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-  children: ReactNode;
-};
-
-function IconButton({ label, onClick, disabled, children }: IconButtonProps) {
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      title={label}
-      className="size-8 text-ink-2 sm:size-10"
-    >
-      {children}
-    </Button>
   );
 }

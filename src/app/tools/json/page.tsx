@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-import { JsonFormatter } from "@/components/json-formatter";
-import { tools } from "@/lib/tools";
+import { JsonFormatter } from "@/components/tools/json/json-formatter";
+import { tools } from "@/data/tools";
 
 // Name, description, and icon come from the catalog, so the home card and this page always match.
 const jsonTool = tools.find((tool) => tool.id === "json");

@@ -3,10 +3,11 @@
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { ToolCard } from "@/components/tool-card";
+import { ToolCard } from "@/components/sections/tool-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { categories, tools, type Category } from "@/lib/tools";
+import { categories, type Category } from "@/data/categories";
+import { tools } from "@/data/tools";
 import { cn } from "@/lib/utils";
 
 const favoritesKey = "hub.favs";
