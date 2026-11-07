@@ -62,6 +62,7 @@ All source code lives in `src/`; the `@/` import alias points at it.
 - Do not edit generated output or dependency directories such as `.next/` and `node_modules/` unless the user explicitly asks. Let the project's commands generate their own output.
 - Treat file changes you did not make as the user's work. Preserve those changes unless the user authorizes reverting them.
 - Write code a junior full-stack developer can follow. Use descriptive names, straightforward React state and event handlers, and components grouped by responsibility. Preserve TypeScript checks, browser storage fallbacks, and accessibility.
+- **Comments.** Write comments only to explain reasons, constraints, or behavior that is not clear from the code. Avoid restating what the code does, and remove redundant comments when editing. Preserve source attribution, license notices, necessary tool directives, and explanations of non-obvious accessibility behavior.
 
 ## UI and Styling Rules
 

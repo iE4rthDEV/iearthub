@@ -4,6 +4,8 @@ import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { ToolCard } from "@/components/sections/tool-card";
+import { PinnedToolCard } from "@/components/sections/pinned-tool-card";
+import { BentoGrid } from "@/components/ui/bento-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -167,11 +169,11 @@ export function ToolHub() {
             <div className="mt-2 mb-3">
               <h2 id="pinned-title" className="text-lg font-bold">ปักหมุด</h2>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:auto-rows-[minmax(11rem,auto)] lg:grid-cols-4 lg:gap-5 2xl:gap-6">
+            <BentoGrid className="sm:grid-cols-2 sm:gap-4 lg:auto-rows-[minmax(14rem,auto)] lg:grid-cols-4 lg:gap-5 2xl:gap-6">
               {pinnedCardVariants.map((variant, index) => (
                 <PinnedCardSkeleton key={index} variant={variant} />
               ))}
-            </div>
+            </BentoGrid>
           </section>
         )}
 
@@ -183,24 +185,23 @@ export function ToolHub() {
                 ปักหมุดแล้ว {pinnedTools.length}/{maxPinnedTools} · กดดาวเพื่อปักหมุดเครื่องมือ
               </p>
             </div>
-            <div className={cn(
+            <BentoGrid className={cn(
               "grid grid-cols-1 gap-3 sm:gap-4 lg:gap-5 2xl:gap-6",
               pinnedTools.length > 1 && "sm:grid-cols-2",
               pinnedTools.length > 1 && "lg:grid-cols-3",
-              pinnedTools.length > 2 && "lg:auto-rows-[minmax(11rem,auto)]",
+              pinnedTools.length > 2 && "lg:auto-rows-[minmax(14rem,auto)]",
               hasFullPinnedLayout && "lg:grid-cols-4",
             )}>
               {pinnedTools.map((tool, index) => (
-                <ToolCard
+                <PinnedToolCard
                   key={tool.id}
                   tool={tool}
                   variant={pinnedCardVariants[index]}
                   pinnedToolCount={pinnedTools.length}
-                  isPinned
                   onTogglePin={() => toggleFavorite(tool.id)}
                 />
               ))}
-            </div>
+            </BentoGrid>
           </section>
         )}
 
@@ -220,7 +221,7 @@ export function ToolHub() {
             ))}
             {filteredTools.length === 0 && (
               <p className="glass col-span-full rounded-2xl px-4 py-8 text-center wrap-anywhere text-ink-3 sm:p-10">
-                ไม่พบเครื่องมือที่ตรงกับ “{trimmedSearch}”
+                {trimmedSearch ? `ไม่พบเครื่องมือที่ตรงกับ “${trimmedSearch}”` : "ยังไม่มีเครื่องมือในหมวดหมู่นี้"}
               </p>
             )}
           </div>
